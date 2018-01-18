@@ -16,8 +16,10 @@ import {
 
 import FCM from "react-native-fcm";
 
-import PushController from "./PushController";
+import {registerKilledListener, registerAppListener} from "./Listeners";
 import firebaseClient from  "./FirebaseClient";
+
+registerKilledListener();
 
 export default class App extends Component {
   constructor(props) {
@@ -29,12 +31,30 @@ export default class App extends Component {
     }
   }
 
-  componentDidMount(){
+  async componentDidMount(){
+    registerAppListener();
     FCM.getInitialNotification().then(notif => {
       this.setState({
         initNotif: notif
       })
     });
+
+    try{
+      let result = await FCM.requestPermissions({badge: false, sound: true, alert: true});
+    } catch(e){
+      console.error(e);
+    }
+
+    FCM.getFCMToken().then(token => {
+      console.log("TOKEN (getFCMToken)", token);
+      this.setState({token: token || ""})
+    });
+
+    if(Platform.OS === 'ios'){
+      FCM.getAPNSToken().then(token => {
+        console.log("APNS TOKEN (getFCMToken)", token);
+      });
+    }
   }
 
   showLocalNotification() {
@@ -47,6 +67,7 @@ export default class App extends Component {
       sound: "bell.mp3",
       large_icon: "https://image.freepik.com/free-icon/small-boy-cartoon_318-38077.jpg",
       show_in_foreground: true,
+      group: 'test',
       number: 10
     });
   }
@@ -62,7 +83,8 @@ export default class App extends Component {
       priority: "high",
       large_icon: "https://image.freepik.com/free-icon/small-boy-cartoon_318-38077.jpg",
       show_in_foreground: true,
-      picture: 'https://firebase.google.com/_static/af7ae4b3fc/images/firebase/lockup.png'
+      picture: 'https://firebase.google.com/_static/af7ae4b3fc/images/firebase/lockup.png',
+      wake_screen: true
     });
   }
 
@@ -134,9 +156,6 @@ export default class App extends Component {
 
     return (
       <View style={styles.container}>
-        <PushController
-          onChangeToken={token => this.setState({token: token || ""})}
-        />
         <Text style={styles.welcome}>
           Welcome to Simple Fcm Client!
         </Text>

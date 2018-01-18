@@ -10,10 +10,14 @@
 
 - An example working project is available at: https://github.com/evollu/react-native-fcm/tree/master/Examples/simple-fcm-client
 
+- DO NOT change Android targetSdkVersion >= 26. The notification won't show up because of notification channel requirement.
+If you have to upgrade, you can use sdk-26 branch and post feedback on [here](https://github.com/evollu/react-native-fcm/pull/699)
+
 ## Installation
 
 - Run `npm install react-native-fcm --save`
-- Run `react-native link react-native-fcm` (RN 0.29.1+, otherwise `rnpm link react-native-fcm`)
+- [Link libraries](https://facebook.github.io/react-native/docs/linking-libraries-ios.html)
+  Note: the auto link doesn't work with xcworkspace so CocoaPods user needs to do manual linking
 
 ## Configure Firebase Console
 ### FCM config file
@@ -41,6 +45,7 @@ https://github.com/evollu/react-native-fcm/blob/master/Examples/simple-fcm-clien
 - Edit `android/app/build.gradle`. Add at the bottom of the file:
 ```diff
   apply plugin: "com.android.application"
+  ...
 + apply plugin: 'com.google.gms.google-services'
 ```
 
@@ -182,7 +187,7 @@ cd ios && pod init
 Edit the newly created `Podfile`:
 ```diff
   # Pods for YOURAPP
-+ pod 'FirebaseMessaging'
++ pod 'Firebase/Messaging'
 ```
 
 Install the `Firebase/Messaging` pod:
@@ -195,7 +200,7 @@ NOTE: you don't need to enable `use_frameworks!`. if you have to have `use_frame
 
 1. Download the Firebase SDK framework from [Integrate without CocoaPods](https://firebase.google.com/docs/ios/setup#frameworks).
 - Import libraries, add Capabilities (background running and push notification), upload APNS and etc etc etc...
-2. Put frameworks under `ios/Pods` folder
+2. Put frameworks under `ios/Frameworks` folder
 2. Follow the `README` to link frameworks (Analytics+Messaging)
 
 ### Shared steps
@@ -307,7 +312,7 @@ FCM.on(FCMEvent.Notification, async (notif) => {
 
     if(Platform.OS ==='ios'){
       //optional
-      //iOS requires developers to call completionHandler to end notification process. If you do not call it your background remote notifications could be throttled, to read more about it see the above documentation link.
+      //iOS requires developers to call completionHandler to end notification process. If you do not call it your background remote notifications could be throttled, to read more about it see https://developer.apple.com/documentation/uikit/uiapplicationdelegate/1623013-application.
       //This library handles it for you automatically with default behavior (for remote notification, finish with NoData; for WillPresent, finish depend on "show_in_foreground"). However if you want to return different result, follow the following code to override
       //notif._notificationType is available for iOS platfrom
       switch(notif._notificationType){
@@ -346,7 +351,7 @@ class App extends Component {
         // initial notification contains the notification that launchs the app. If user launchs app by clicking banner, the banner notification info will be here rather than through FCM.on event
         // sometimes Android kills activity when app goes to background, and when resume it broadcasts notification before JS is run. You can use FCM.getInitialNotification() to capture those missed events.
         // initial notification will be triggered all the time even when open app by icon so send some action identifier when you send notification
-        FCM.getInitialNotification().then(notif=>{
+        FCM.getInitialNotification().then(notif => {
            console.log(notif)
         });
     }
@@ -377,6 +382,7 @@ class App extends Component {
             sub_text: "This is a subText",                      // Android only
             color: "red",                                       // Android only
             vibrate: 300,                                       // Android only default: 300, no vibration if you pass 0
+            wake_screen: true,                                  // Android only, wake up screen when notification arrives
             group: "group",                                     // Android only
             picture: "https://google.png",                      // Android only bigPicture style
             ongoing: true,                                      // Android only
@@ -402,8 +408,8 @@ class App extends Component {
         FCM.cancelAllLocalNotifications()
         FCM.cancelLocalNotification("UNIQ_ID_STRING")
 
-        FCM.setBadgeNumber(1);                                       // iOS only and there's no way to set it in Android, yet.
-        FCM.getBadgeNumber().then(number=>console.log(number));     // iOS only and there's no way to get it in Android, yet.
+        FCM.setBadgeNumber(1);                                       // iOS and supporting android.
+        FCM.getBadgeNumber().then(number=>console.log(number));     // iOS and supporting android.
         FCM.send('984XXXXXXXXX', {
           my_custom_data_1: 'my_custom_field_value_1',
           my_custom_data_2: 'my_custom_field_value_2'
