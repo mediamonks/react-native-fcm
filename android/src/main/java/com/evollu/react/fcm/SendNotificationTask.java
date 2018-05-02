@@ -197,8 +197,10 @@ public class SendNotificationTask extends AsyncTask<Void, Void, Void> {
                     try {
                         ApplicationInfo appInfo = mContext.getPackageManager().getApplicationInfo(mContext.getPackageName(), 128);
                         if (appInfo.metaData != null) {
-                            android.util.Log.d(TAG, "doInBackground: " + appInfo.metaData.getInt("com.google.firebase.messaging.default_notification_color"));
-                            notification.setColor(ContextCompat.getColor(mContext, appInfo.metaData.getInt("com.google.firebase.messaging.default_notification_color")));
+                          int metaColorResId = appInfo.metaData.getInt("com.google.firebase.messaging.default_notification_color");
+                          if(metaIconResId != 0) {
+                            notification.setColor(ContextCompat.getColor(mContext, metaIconResId));  
+                          }
                         }
                     } catch (Error e) {
                     }
@@ -288,4 +290,3 @@ public class SendNotificationTask extends AsyncTask<Void, Void, Void> {
         return launchIntent != null ? launchIntent.getComponent().getClassName() : null;
     }
 }
-
