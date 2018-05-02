@@ -106,7 +106,7 @@ public class SendNotificationTask extends AsyncTask<Void, Void, Void> {
                 if (appInfo.metaData != null) {
                     metaIconResId = appInfo.metaData.getInt("com.google.firebase.messaging.default_notification_icon");
                 }
-            } catch (Error e) {
+            } catch (Resources.NotFoundException e) {
             }
 
             String smallIcon = bundle.getString("icon");
@@ -198,11 +198,11 @@ public class SendNotificationTask extends AsyncTask<Void, Void, Void> {
                         ApplicationInfo appInfo = mContext.getPackageManager().getApplicationInfo(mContext.getPackageName(), 128);
                         if (appInfo.metaData != null) {
                           int metaColorResId = appInfo.metaData.getInt("com.google.firebase.messaging.default_notification_color");
-                          if(metaIconResId != 0) {
-                            notification.setColor(ContextCompat.getColor(mContext, metaIconResId));  
+                          if(metaColorResId != 0) {
+                            notification.setColor(ContextCompat.getColor(mContext, metaColorResId));
                           }
                         }
-                    } catch (Error e) {
+                    } catch (Resources.NotFoundException e) {
                     }
                 }
             }
